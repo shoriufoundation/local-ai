@@ -64,7 +64,7 @@ async function fetchAIResponse(modelName, messages) {
 
   const data = await response.json();
   if (!response.ok || data.error) {
-    throw new Error(data.error?.message || `Model hatası: ${modelName}`);
+    throw new Error(data.error?.message || `Model error: ${modelName}`);
   }
   return data.choices[0].message.content;
 }
@@ -78,7 +78,7 @@ app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
 
   if (!message || typeof message !== 'string') {
-    return res.status(400).json({ error: 'Geçersiz mesaj.' });
+    return res.status(400).json({ error: 'Invalid message.' });
   }
 
   try {
@@ -91,7 +91,7 @@ app.post('/api/chat', async (req, res) => {
     try {
       reply = await fetchAIResponse('nvidia/nemotron-3-ultra-550b-a55b:free', fullMessages);
     } catch (primaryErr) {
-      console.warn('NVIDIA yoğun, yedek modele geçiliyor:', primaryErr.message);
+      console.warn('NVIDIA is full, switching backup node:', primaryErr.message);
       reply = await fetchAIResponse('openrouter/free', fullMessages);
     }
 
@@ -101,10 +101,10 @@ app.post('/api/chat', async (req, res) => {
     res.json({ reply });
 
   } catch (err) {
-    console.error('Tüm modeller patladı:', err.message);
-    res.status(500).json({ error: 'Hikari şu an yanıt veremiyor ❤️' });
+    console.error('Something went wrong:', err.message);
+    res.status(500).json({ error: "I can't answer, check console." });
   }
 });
 
-const PORT = process.env.PORT || 9871;
-app.listen(PORT, () => console.log(`[Shoriu Foundation] Hikari hazır! http://localhost:${PORT}`));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`[Shoriu Foundation] Local AI is ready! http://localhost:${PORT}`));
