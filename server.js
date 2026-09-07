@@ -102,7 +102,7 @@ app.post('/api/chat', async (req, res) => {
 
   } catch (err) {
     console.error('Something went wrong:', err.message);
-    res.status(500).json({ error: "I can't answer, check console." });
+    res.status(500).json({ error: "I can't answer, check your OpenRouter status." });
   }
 });
 
