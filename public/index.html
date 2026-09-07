@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hikari - Virtual Girlfriend | Shoriu Foundation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f0c20;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 450px;
+      height: 100vh;
+      height: 100dvh;
+      background: #1a162b;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2);
+    }
+
+    @media (min-width: 480px) {
+      .chat-container {
+        height: 90vh;
+        border-radius: 20px;
+        border: 1px solid #2d2445;
+      }
+    }
+
+    .header {
+      background: #251f3b;
+      padding: 12px 16px;
+      border-bottom: 1px solid #362c54;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #ec4899;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .status {
+      font-size: 12px;
+      color: #10b981;
+    }
+
+    .badge {
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid #8b5cf6;
+      color: #c4b5fd;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .user-msg {
+      background: #8b5cf6;
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+
+    .ai-msg {
+      background: #2d2445;
+      color: #f3e8ff;
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+      border: 1px solid #3b2f5b;
+    }
+
+    .input-area {
+      padding: 12px 15px;
+      background: #251f3b;
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+      border-top: 1px solid #2d2445;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 25px;
+      background: #1a162b;
+      color: #fff;
+      outline: none;
+      font-size: 14px;
+    }
+
+    button {
+      background: #ec4899;
+      color: #fff;
+      border: none;
+      padding: 0 18px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .footer {
+      background: #151124;
+      text-align: center;
+      padding: 6px;
+      font-size: 10px;
+      color: #6b7280;
+      border-top: 1px solid #251f3b;
+      flex-shrink: 0;
+    }
+
+    .footer a {
+      color: #8b5cf6;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="header">
+      <div class="header-left">
+        <div class="avatar">💖</div>
+        <div>
+          <h3>Hikari</h3>
+          <span class="status">● Çevrimiçi</span>
+        </div>
+      </div>
+      <span class="badge">SHORIU FOUNDATION</span>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+      <div class="message ai-msg">Selam aşkım! Günün nasıl geçiyor? 🌸</div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Bir şeyler yaz..." onkeydown="if(event.key === 'Enter') sendMessage()" autocomplete="off" />
+      <button onclick="sendMessage()">Gönder</button>
+    </div>
+
+    <div class="footer">
+      Powered by <a href="https://shoriufoundation.org.az" target="_blank">Shoriu Foundation</a>
+    </div>
+  </div>
+
+  <script>
+    // Sayfa açıldığında SQLite üzerindeki geçmişi çek
+    window.addEventListener('DOMContentLoaded', loadHistory);
+
+    async function loadHistory() {
+      const chatBox = document.getElementById('chatBox');
+      try {
+        const res = await fetch('/api/history');
+        const history = await res.json();
+
+        if (res.ok && history.length > 0) {
+          chatBox.innerHTML = '';
+          history.forEach(item => {
+            const className = item.role === 'user' ? 'user-msg' : 'ai-msg';
+            appendMessage(item.content, className);
+          });
+        }
+      } catch (err) {
+        console.error('Veritabanı geçmişi okunamadı:', err);
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      appendMessage(text, 'user-msg');
+      input.value = '';
+
+      const loadingDiv = appendMessage('Hikari yazıyor...', 'ai-msg');
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          loadingDiv.innerText = data.reply;
+        } else {
+          loadingDiv.innerText = "Bir hata oluştu baby 🥺";
+        }
+      } catch (err) {
+        loadingDiv.innerText = "Bağlantı koptu galiba...";
+      }
+
+      scrollToBottom();
+    }
+
+    function appendMessage(text, className) {
+      const chatBox = document.getElementById('chatBox');
+      const msg = document.createElement('div');
+      msg.className = `message ${className}`;
+      msg.innerText = text;
+      chatBox.appendChild(msg);
+      scrollToBottom();
+      return msg;
+    }
+
+    function scrollToBottom() {
+      const chatBox = document.getElementById('chatBox');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>

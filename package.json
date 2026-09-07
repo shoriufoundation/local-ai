@@ -1,0 +1,28 @@
+{
+  "name": "local-ai",
+  "version": "2.0.6",
+  "description": "Local AI powered by OpenRouter & NVIDIA Nemotron - Shoriu Foundation",
+  "main": "main.js",
+  "type": "commonjs",
+  "author": "Shoriu Foundation",
+  "homepage": "https://shoriufoundation.org.az",
+  "scripts": {
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "shoriu-foundation",
+    "ai",
+    "local-ai"
+  ],
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "build": {
+    "appId": "az.org.shoriufoundation.localai",
+    "productName": "Local AI",
+    "extraResources": [
+      ".env"
+    ]
+  }
+}
