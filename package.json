@@ -2,7 +2,7 @@
   "name": "local-ai",
   "version": "2.0.6",
   "description": "Local AI powered by OpenRouter & NVIDIA Nemotron - Shoriu Foundation",
-  "main": "main.js",
+  "main": "server.js",
   "type": "commonjs",
   "author": "Shoriu Foundation",
   "homepage": "https://shoriufoundation.org.az",
